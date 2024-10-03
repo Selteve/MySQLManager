@@ -2,15 +2,33 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ConnectToMySQL, GetDatabases, GetTables, GetTableData, UpdateTableData, InsertTableData, DeleteTableData, ExecuteQuery } from '../../wailsjs/go/main/App';
 import './index.css';
 
-// 新增自定义模态框组件
-const Modal = ({ isOpen, onClose, children }) => {
+// 自定义模态框组件
+const Modal = ({ isOpen, onClose, children, type }) => {
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content glass-effect">
+      <div className={`modal-content glass-effect ${type}`}>
         {children}
         <button className="modal-close" onClick={onClose}>×</button>
+      </div>
+    </div>
+  );
+};
+
+// 新增 ConfirmDialog 组件
+const ConfirmDialog = ({ isOpen, onClose, onConfirm, message }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content glass-effect confirm-dialog">
+        <h2>确认删除</h2>
+        <p>{message}</p>
+        <div className="confirm-buttons">
+          <button className="cancel-button" onClick={onClose}>取消</button>
+          <button className="danger-button" onClick={onConfirm}>删除</button>
+        </div>
       </div>
     </div>
   );
@@ -36,18 +54,34 @@ const MySQLManager = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const mainContentRef = useRef(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', message: '', type: '' });
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   const handleConnect = async () => {
+    setIsConnecting(true);
     const dsn = `${username}:${password}@tcp(${host}:${port})/${dbName}?charset=utf8mb4&parseTime=True&loc=Local`;
     try {
       await ConnectToMySQL(dsn);
       const dbs = await GetDatabases();
       setDatabases(dbs);
       setIsConnected(true);
-      setIsModalOpen(true);
+      setModalContent({
+        title: '连接成功',
+        message: '已成功连接到 MySQL 数据库。',
+        type: 'success'
+      });
     } catch (error) {
       console.error('连接失败:', error);
-      alert('连接失败: ' + error.message);
+      setModalContent({
+        title: '连接失败',
+        message: error.message,
+        type: 'error'
+      });
+    } finally {
+      setIsConnecting(false);
+      setIsModalOpen(true);
     }
   };
 
@@ -93,17 +127,32 @@ const MySQLManager = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('确定要删除这条记录吗？')) {
-      try {
-        await DeleteTableData(selectedDb, selectedTable, id);
-        // 刷新表格数据
-        const updatedData = await GetTableData(selectedDb, selectedTable);
-        setTableData(updatedData);
-      } catch (error) {
-        console.error('删除失败:', error);
-        alert('删除失败: ' + error.message);
-      }
+  const handleDelete = (id) => {
+    setDeleteId(id);
+    setIsConfirmDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await DeleteTableData(selectedDb, selectedTable, deleteId);
+      // 刷新表格数据
+      const updatedData = await GetTableData(selectedDb, selectedTable);
+      setTableData(updatedData);
+      setModalContent({
+        title: '删除成功',
+        message: '记录已成功删除。',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('删除失败:', error);
+      setModalContent({
+        title: '删除失败',
+        message: error.message,
+        type: 'error'
+      });
+    } finally {
+      setIsConfirmDialogOpen(false);
+      setIsModalOpen(true);
     }
   };
 
@@ -147,7 +196,7 @@ const MySQLManager = () => {
   }, [isSidebarCollapsed]);
 
   return (
-    <div className="mysql-manager" style={{backgroundImage: `url(${backgroundImage})`}}>
+    <div className="mysql-manager" style={{backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none'}}>
       <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-content">
           <h2>MySQL 管理器</h2>
@@ -189,7 +238,9 @@ const MySQLManager = () => {
             <input type="text" value={host} onChange={(e) => setHost(e.target.value)} placeholder="主机地址" />
             <input type="text" value={port} onChange={(e) => setPort(e.target.value)} placeholder="端口" />
             <input type="text" value={dbName} onChange={(e) => setDbName(e.target.value)} placeholder="数据库名称" />
-            <button className="primary-button" onClick={handleConnect}>连接</button>
+            <button className="primary-button" onClick={handleConnect} disabled={isConnecting}>
+              {isConnecting ? '连接中...' : '连接'}
+            </button>
           </div>
         </div>
         <div className="table-container glass-effect">
@@ -284,10 +335,20 @@ const MySQLManager = () => {
           )}
         </div>
       </div>
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2>连接成功</h2>
-        <p>已成功连接到 MySQL 数据库。</p>
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        type={modalContent.type}
+      >
+        <h2>{modalContent.title}</h2>
+        <p>{modalContent.message}</p>
       </Modal>
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        onConfirm={confirmDelete}
+        message="确定要删除这条记录吗？此操作不可撤销。"
+      />
     </div>
   );
 };

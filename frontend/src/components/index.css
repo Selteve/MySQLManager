@@ -88,11 +88,66 @@ body {
 }
 
 .modal-content {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--text-color);
   padding: 20px;
   border-radius: 10px;
   max-width: 400px;
   width: 100%;
   position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.modal-content.glass-effect {
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.confirm-dialog {
+  text-align: center;
+}
+
+.confirm-dialog h2 {
+  margin-top: 0;
+  color: var(--danger-color);
+}
+
+.confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-button, .danger-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  font-size: 14px;
+}
+
+.cancel-button {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #7f8c8d;
+}
+
+.danger-button {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.danger-button:hover {
+  background-color: #c0392b;
+}
+
+.cancel-button:active, .danger-button:active {
+  transform: translateY(1px);
 }
 
 .modal-close {
@@ -103,16 +158,16 @@ body {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: var(--text-color);
+  color: #333;
 }
 
 .modal-content h2 {
   margin-top: 0;
-  color: var(--text-color);
+  color: #333;
 }
 
 .modal-content p {
-  color: var(--text-color);
+  color: #333;
 }
 
 .sidebar h2 {
@@ -340,3 +395,5 @@ tr:hover .action-buttons {
     padding: 10px; /* 减少内边距 */
   }
 }
+
+/* 保留其他样式 */
