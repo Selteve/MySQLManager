@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import '../styles/ConnectionList.css'; // 引入样式文件
+import { useSelector, useDispatch } from 'react-redux';
+import { removeConnection } from '../../store/modules/ConnectionList';
 
 const ConnectionList = () => {
-  const [connections, setConnections] = useState([
-    { name: '连接1', host: 'localhost', port: '3306', dbName: 'test_db' },
-    { name: '连接2', host: '192.168.1.1', port: '3306', dbName: 'prod_db' }
-  ]);
-
+  const connections = useSelector(state => state.connectionList);
+  const dispatch = useDispatch();
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
-  const handleDelete = (index) => {
-    const updatedConnections = connections.filter((_, i) => i !== index);
-    setConnections(updatedConnections);
+  const handleDelete = (id) => {
+    dispatch(removeConnection(id));
   };
 
   return (
@@ -30,17 +28,17 @@ const ConnectionList = () => {
         <tbody>
           {connections.map((conn, index) => (
             <tr 
-              key={index}
+              key={conn.id}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <td>{conn.name}</td>
+              <td>{conn.username}</td>
               <td>{conn.host}</td>
               <td>{conn.port}</td>
               <td>{conn.dbName}</td>
               <td>
                 {hoveredIndex === index && (
-                  <button onClick={() => handleDelete(index)}>删除</button>
+                  <button onClick={() => handleDelete(conn.id)}>删除</button>
                 )}
               </td>
             </tr>

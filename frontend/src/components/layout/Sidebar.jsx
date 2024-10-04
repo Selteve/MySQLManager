@@ -11,7 +11,6 @@ const Sidebar = ({
   isSidebarCollapsed, 
   toggleSidebar, 
   isConnected,
-  connectionList,
   handleBackgroundImageChange
 }) => {
   return (

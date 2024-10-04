@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addConnection } from '../../store/modules/ConnectionList';
 import { ConnectToMySQL, GetDatabases, GetTables, GetTableData, UpdateTableData, InsertTableData, DeleteTableData, ExecuteQuery } from '../../../wailsjs/go/main/App';
 import Sidebar from '../layout/Sidebar';
 import ConnectionForm from '../layout/ConnectionForm';
@@ -35,6 +37,7 @@ const MySQLManager = () => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
+  const dispatch = useDispatch();
   const handleConnect = async () => {
     setIsConnecting(true);
     const dsn = `${username}:${password}@tcp(${host}:${port})/${dbName}?charset=utf8mb4&parseTime=True&loc=Local`;
@@ -48,6 +51,16 @@ const MySQLManager = () => {
         message: '已成功连接到 MySQL 数据库。',
         type: 'success'
       });
+      let connectionInfo = {
+        host,
+        port,
+        username,
+        password,
+        dbName,
+        id: new Date().getTime()
+      }
+      handleConnectSuccess(connectionInfo)
+      
     } catch (error) {
       console.error('连接失败:', error);
       setModalContent({
@@ -72,6 +85,10 @@ const MySQLManager = () => {
       GetTableData(selectedDb, selectedTable).then(setTableData).catch(console.error);
     }
   }, [selectedDb, selectedTable]);
+
+  const handleConnectSuccess = (connectionInfo) => {
+    dispatch(addConnection(connectionInfo));
+  };
 
   const handleSave = async () => {
     try {
