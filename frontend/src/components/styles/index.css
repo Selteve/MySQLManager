@@ -50,6 +50,15 @@ body {
   opacity: 0;
   pointer-events: none;
 }
+/* 假设这是在 Sidebar.css 文件中 */
+.sidebar a {
+  text-decoration: none; /* 去掉下划线 */
+  color: inherit; /* 继承父元素的颜色 */
+}
+
+.sidebar a:hover {
+  color: #007bff; /* 悬停时的颜色，可以根据需要调整 */
+}
 
 .toggle-sidebar {
   position: absolute;
@@ -171,6 +180,11 @@ body {
 }
 
 .sidebar h2 {
+  color: var(--text-color);
+  margin-bottom: 20px;
+}
+
+.sidebar h3 {
   color: var(--text-color);
   margin-bottom: 20px;
 }

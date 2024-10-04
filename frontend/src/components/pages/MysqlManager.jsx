@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ConnectToMySQL, GetDatabases, GetTables, GetTableData, UpdateTableData, InsertTableData, DeleteTableData, ExecuteQuery } from '../../wailsjs/go/main/App';
-import Sidebar from './Sidebar';
-import ConnectionForm from './ConnectionForm';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { ConnectToMySQL, GetDatabases, GetTables, GetTableData, UpdateTableData, InsertTableData, DeleteTableData, ExecuteQuery } from '../../../wailsjs/go/main/App';
+import Sidebar from '../layout/Sidebar';
+import ConnectionForm from '../layout/ConnectionForm';
 import TableView from './TableView';
-import CustomQuerySection from './CustomQuerySection';
-import Modal from './Modal';
-import ConfirmDialog from './ConfirmDialog';
-import './index.css';
+import CustomQuerySection from '../common/CustomQuerySection';
+import Modal from '../common/Modal';
+import ConfirmDialog from '../common/ConfirmDialog';
+import ConnectionList from './ConnectionList';
+import '../styles/index.css';
 
 const MySQLManager = () => {
   const [username, setUsername] = useState('');
@@ -163,67 +165,76 @@ const MySQLManager = () => {
   }, [isSidebarCollapsed]);
 
   return (
-    <div className="mysql-manager" style={{backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none'}}>
-      <Sidebar
-        databases={databases}
-        selectedDb={selectedDb}
-        setSelectedDb={setSelectedDb}
-        tables={tables}
-        selectedTable={selectedTable}
-        setSelectedTable={setSelectedTable}
-        isSidebarCollapsed={isSidebarCollapsed}
-        toggleSidebar={toggleSidebar}
-        isConnected={isConnected}
-        handleBackgroundImageChange={handleBackgroundImageChange}
-      />
-      <div className="main-content" ref={mainContentRef}>
-        <ConnectionForm
-          username={username}
-          setUsername={setUsername}
-          password={password}
-          setPassword={setPassword}
-          host={host}
-          setHost={setHost}
-          port={port}
-          setPort={setPort}
-          dbName={dbName}
-          setDbName={setDbName}
-          handleConnect={handleConnect}
-          isConnecting={isConnecting}
+    <Router>
+      <div className="mysql-manager" style={{backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none'}}>
+        <Sidebar
+          databases={databases}
+          selectedDb={selectedDb}
+          setSelectedDb={setSelectedDb}
+          tables={tables}
+          selectedTable={selectedTable}
+          setSelectedTable={setSelectedTable}
+          isSidebarCollapsed={isSidebarCollapsed}
+          toggleSidebar={toggleSidebar}
+          isConnected={isConnected}
+          handleBackgroundImageChange={handleBackgroundImageChange}
         />
-        <TableView
-          tableData={tableData}
-          editingRow={editingRow}
-          setEditingRow={setEditingRow}
-          handleSave={handleSave}
-          handleEdit={setEditingRow}
-          handleDelete={handleDelete}
-          newRow={newRow}
-          setNewRow={setNewRow}
-          handleAdd={handleAdd}
-        />
-        <CustomQuerySection
-          customQuery={customQuery}
-          setCustomQuery={setCustomQuery}
-          handleExecuteQuery={handleExecuteQuery}
-          queryResult={queryResult}
+        <div className="main-content" ref={mainContentRef}>
+          <Routes>
+            <Route path="/connections" element={<ConnectionList />} />
+            <Route path="/" element={
+              <>
+                <ConnectionForm
+                  username={username}
+                  setUsername={setUsername}
+                  password={password}
+                  setPassword={setPassword}
+                  host={host}
+                  setHost={setHost}
+                  port={port}
+                  setPort={setPort}
+                  dbName={dbName}
+                  setDbName={setDbName}
+                  handleConnect={handleConnect}
+                  isConnecting={isConnecting}
+                />
+                <TableView
+                  tableData={tableData}
+                  editingRow={editingRow}
+                  setEditingRow={setEditingRow}
+                  handleSave={handleSave}
+                  handleEdit={setEditingRow}
+                  handleDelete={handleDelete}
+                  newRow={newRow}
+                  setNewRow={setNewRow}
+                  handleAdd={handleAdd}
+                />
+                <CustomQuerySection
+                  customQuery={customQuery}
+                  setCustomQuery={setCustomQuery}
+                  handleExecuteQuery={handleExecuteQuery}
+                  queryResult={queryResult}
+                />
+              </>
+            } />
+          </Routes>
+        </div>
+        <Modal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)}
+          type={modalContent.type}
+        >
+          <h2>{modalContent.title}</h2>
+          <p>{modalContent.message}</p>
+        </Modal>
+        <ConfirmDialog
+          isOpen={isConfirmDialogOpen}
+          onClose={() => setIsConfirmDialogOpen(false)}
+          onConfirm={confirmDelete}
+          message="确定要删除这条记录吗？此操作不可撤销。"
         />
       </div>
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)}
-        type={modalContent.type}
-      >
-        <h2>{modalContent.title}</h2>
-        <p>{modalContent.message}</p>
-      </Modal>
-      <ConfirmDialog
-        isOpen={isConfirmDialogOpen}
-        onClose={() => setIsConfirmDialogOpen(false)}
-        onConfirm={confirmDelete}
-        message="确定要删除这条记录吗？此操作不可撤销。"
-      />
-    </div>
+    </Router>
   );
 };
 

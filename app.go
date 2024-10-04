@@ -112,12 +112,10 @@ func (a *App) GetTableData(dbName, tableName string) ([]map[string]interface{}, 
 
 		for i, column := range columns {
 			if strVal, ok := values[i].([]byte); ok {
-				// 尝试解码 Base64
 				decoded, err := base64.StdEncoding.DecodeString(string(strVal))
 				if err == nil {
 					row[column] = string(decoded)
 				} else {
-					// 如果不是 Base64，就使用原始值
 					row[column] = string(strVal)
 				}
 			} else {

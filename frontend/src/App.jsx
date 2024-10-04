@@ -1,4 +1,4 @@
-import MysqlManager from './components/MysqlManager';
+import MysqlManager from './components/pages/MysqlManager';
 
 function App() {
 

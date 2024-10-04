@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Sidebar = ({ 
   databases, 
@@ -9,13 +10,20 @@ const Sidebar = ({
   setSelectedTable, 
   isSidebarCollapsed, 
   toggleSidebar, 
-  isConnected, 
-  handleBackgroundImageChange 
+  isConnected,
+  connectionList,
+  handleBackgroundImageChange
 }) => {
   return (
     <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-content">
         <h2>MySQL 管理器</h2>
+        <Link to="/connections">
+          <h3>连接列表</h3>
+        </Link>
+        <Link to="/">
+          <h3>新建连接</h3>
+        </Link>
         <div className="database-selector">
           <select value={selectedDb} onChange={(e) => setSelectedDb(e.target.value)}>
             <option value="">选择数据库</option>
