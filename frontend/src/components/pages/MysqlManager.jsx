@@ -38,6 +38,7 @@ const MySQLManager = () => {
   const [deleteId, setDeleteId] = useState(null);
 
   const dispatch = useDispatch();
+
   const handleConnect = async () => {
     setIsConnecting(true);
     const dsn = `${username}:${password}@tcp(${host}:${port})/${dbName}?charset=utf8mb4&parseTime=True&loc=Local`;
@@ -70,6 +71,34 @@ const MySQLManager = () => {
       });
     } finally {
       setIsConnecting(false);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleSwitchDatabase = async (connection) => {
+    try {
+      setUsername(connection.username);
+      setPassword(connection.password);
+      setHost(connection.host);
+      setPort(connection.port);
+      setDbName(connection.dbName);
+      await ConnectToMySQL(`${connection.username}:${connection.password}@tcp(${connection.host}:${connection.port})/${connection.dbName}?charset=utf8mb4&parseTime=True&loc=Local`);
+      const dbs = await GetDatabases();
+      setDatabases(dbs);
+      setSelectedDb(connection.dbName); // 更新选中的数据库
+      setModalContent({
+        title: '切换成功',
+        message: `成功切换到数据库: ${connection.dbName}`,
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('切换数据库失败:', error);
+      setModalContent({
+        title: '切换失败',
+        message: error.message,
+        type: 'error'
+      });
+    } finally {
       setIsModalOpen(true);
     }
   };
@@ -198,7 +227,7 @@ const MySQLManager = () => {
         />
         <div className="main-content" ref={mainContentRef}>
           <Routes>
-            <Route path="/connections" element={<ConnectionList />} />
+            <Route path="/connections" element={<ConnectionList onSwitchDatabase={handleSwitchDatabase} />} />
             <Route path="/" element={
               <>
                 <ConnectionForm
@@ -254,5 +283,6 @@ const MySQLManager = () => {
     </Router>
   );
 };
+
 
 export default MySQLManager;

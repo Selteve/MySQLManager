@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { GetTables } from '../../../wailsjs/go/main/App';
 
 const Sidebar = ({ 
   databases, 
   selectedDb, 
   setSelectedDb, 
   tables, 
+  setTables, // 新增 setTables prop
   selectedTable, 
   setSelectedTable, 
   isSidebarCollapsed, 
@@ -13,6 +15,13 @@ const Sidebar = ({
   isConnected,
   handleBackgroundImageChange
 }) => {
+
+  useEffect(() => {
+    if (selectedDb) {
+      GetTables(selectedDb).then(setTables).catch(console.error);
+    }
+  }, [selectedDb, setTables]);
+
   return (
     <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-content">
