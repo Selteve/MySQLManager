@@ -1,47 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import ConfirmDialog from '../common/ConfirmDialog';
-import { deleteConnection, getAllConnections } from '../../utils/dbOperations'; // 假设这是与 SQLite 交互的工具函数
+import React, { useState } from 'react';
+import '../styles/ConnectionList.css'; // 引入样式文件
+import { useSelector, useDispatch } from 'react-redux';
+import { removeConnection } from '../../store/modules/ConnectionList';
 
-const ConnectionList = () => {
-  const [connections, setConnections] = useState([]);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedConnection, setSelectedConnection] = useState(null);
+const ConnectionList = ({ onSwitchDatabase }) => {
+  const connections = useSelector(state => state.connectionList);
+  const dispatch = useDispatch();
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    loadConnections();
-  }, []);
-
-  const loadConnections = async () => {
-    const data = await getAllConnections();
-    setConnections(data);
+  const handleDelete = (id) => {
+    dispatch(removeConnection(id));
   };
 
-  const handleDeleteClick = (connection, e) => {
-    e.stopPropagation(); // 阻止事件冒泡
-    setSelectedConnection(connection);
-    setShowDeleteDialog(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (selectedConnection) {
-      await deleteConnection(selectedConnection.id);
-      await loadConnections(); // 重新加载连接列表
-      setShowDeleteDialog(false);
-      setSelectedConnection(null);
+  const handleSwitchDatabase = (connection) => {
+    const success = onSwitchDatabase(connection);
+    if (success) {
+      setMessage(`成功切换到数据库: ${connection.username}`);
+    } else {
+      setMessage(`切换数据库失败`);
     }
   };
 
   return (
-    <div className="connection-list">
-      {/* 连接列表的其他内容 */}
-      
-      <ConfirmDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={handleConfirmDelete}
-        title="确认删除"
-        message={`确定要删除连接 "${selectedConnection?.name}" 吗？`}
-      />
+    <div className="editable-connection-list">
+      <h2>连接列表</h2>
+      {message && <div className="message">{message}</div>}
+      <table className="editable-connection-table">
+        <thead>
+          <tr>
+            <th>名称</th>
+            <th>主机</th>
+            <th>端口</th>
+            <th>数据库名</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {connections.map((conn, index) => (
+            <tr 
+              key={conn.id}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              onClick={() => handleSwitchDatabase(conn)} // 点击行切换数据库
+            >
+              <td>{conn.username}</td>
+              <td>{conn.host}</td>
+              <td>{conn.port}</td>
+              <td>{conn.dbName}</td>
+              <td>
+                {hoveredIndex === index && (
+                  <button onClick={() => handleDelete(conn.id)}>删除</button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

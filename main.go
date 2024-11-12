@@ -9,7 +9,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
-
 var assets embed.FS
 
 func main() {
