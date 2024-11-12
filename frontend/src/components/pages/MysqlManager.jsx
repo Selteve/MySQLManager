@@ -1,8 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { addConnection } from '../../store/modules/ConnectionList';
-import { ConnectToMySQL, GetDatabases, GetTables, GetTableData, UpdateTableData, InsertTableData, DeleteTableData, ExecuteQuery } from '../../../wailsjs/go/main/App';
 import Sidebar from '../layout/Sidebar';
 import ConnectionForm from '../layout/ConnectionForm';
 import TableView from './TableView';
@@ -10,114 +7,41 @@ import CustomQuerySection from '../common/CustomQuerySection';
 import Modal from '../common/Modal';
 import ConfirmDialog from '../common/ConfirmDialog';
 import ConnectionList from './ConnectionList';
+import useDatabaseConnection from '../../hooks/useDatabaseConnection';
 import '../styles/index.css';
 
 const MySQLManager = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [host, setHost] = useState('localhost');
-  const [port, setPort] = useState('3306');
-  const [dbName, setDbName] = useState('');
-  const [databases, setDatabases] = useState([]);
-  const [selectedDb, setSelectedDb] = useState('');
-  const [tables, setTables] = useState([]);
-  const [selectedTable, setSelectedTable] = useState('');
-  const [tableData, setTableData] = useState([]);
+  const {
+    username, setUsername,
+    password, setPassword,
+    host, setHost,
+    port, setPort,
+    dbName, setDbName,
+    databases, setDatabases,
+    selectedDb, setSelectedDb,
+    tables, setTables,
+    selectedTable, setSelectedTable,
+    tableData, setTableData,
+    isConnected, setIsConnected,
+    isConnecting, setIsConnecting,
+    modalContent,
+    isModalOpen,
+    setIsModalOpen,
+    handleConnect,
+    handleSwitchDatabase
+  } = useDatabaseConnection();
+
   const [editingRow, setEditingRow] = useState(null);
   const [newRow, setNewRow] = useState({});
   const [customQuery, setCustomQuery] = useState('');
   const [queryResult, setQueryResult] = useState([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState('');
-  const [isConnected, setIsConnected] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const mainContentRef = useRef(null);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [modalContent, setModalContent] = useState({ title: '', message: '', type: '' });
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [connections, setConnections] = useState([]);
 
-  const dispatch = useDispatch();
-
-  const handleConnect = async () => {
-    setIsConnecting(true);
-    const dsn = `${username}:${password}@tcp(${host}:${port})/${dbName}?charset=utf8mb4&parseTime=True&loc=Local`;
-    try {
-      await ConnectToMySQL(dsn);
-      const dbs = await GetDatabases();
-      setDatabases(dbs);
-      setIsConnected(true);
-      setModalContent({
-        title: '连接成功',
-        message: '已成功连接到 MySQL 数据库。',
-        type: 'success'
-      });
-      let connectionInfo = {
-        host,
-        port,
-        username,
-        password,
-        dbName,
-        id: new Date().getTime()
-      }
-      handleConnectSuccess(connectionInfo)
-      
-    } catch (error) {
-      console.error('连接失败:', error);
-      setModalContent({
-        title: '连接失败',
-        message: error.message,
-        type: 'error'
-      });
-    } finally {
-      setIsConnecting(false);
-      setIsModalOpen(true);
-    }
-  };
-
-  const handleSwitchDatabase = async (connection) => {
-    try {
-      setUsername(connection.username);
-      setPassword(connection.password);
-      setHost(connection.host);
-      setPort(connection.port);
-      setDbName(connection.dbName);
-      await ConnectToMySQL(`${connection.username}:${connection.password}@tcp(${connection.host}:${connection.port})/${connection.dbName}?charset=utf8mb4&parseTime=True&loc=Local`);
-      const dbs = await GetDatabases();
-      setDatabases(dbs);
-      setSelectedDb(connection.dbName); // 更新选中的数据库
-      setModalContent({
-        title: '切换成功',
-        message: `成功切换到数据库: ${connection.dbName}`,
-        type: 'success'
-      });
-    } catch (error) {
-      console.error('切换数据库失败:', error);
-      setModalContent({
-        title: '切换失败',
-        message: error.message,
-        type: 'error'
-      });
-    } finally {
-      setIsModalOpen(true);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedDb) {
-      GetTables(selectedDb).then(setTables).catch(console.error);
-    }
-  }, [selectedDb]);
-
-  useEffect(() => {
-    if (selectedDb && selectedTable) {
-      GetTableData(selectedDb, selectedTable).then(setTableData).catch(console.error);
-    }
-  }, [selectedDb, selectedTable]);
-
-  const handleConnectSuccess = (connectionInfo) => {
-    dispatch(addConnection(connectionInfo));
-  };
 
   const handleSave = async () => {
     try {
@@ -227,7 +151,7 @@ const MySQLManager = () => {
         />
         <div className="main-content" ref={mainContentRef}>
           <Routes>
-            <Route path="/connections" element={<ConnectionList onSwitchDatabase={handleSwitchDatabase} />} />
+            <Route path="/connections" element={<ConnectionList onSwitchDatabase={handleSwitchDatabase} connections={connections} setConnections={setConnections} />} />
             <Route path="/" element={
               <>
                 <ConnectionForm
@@ -283,6 +207,5 @@ const MySQLManager = () => {
     </Router>
   );
 };
-
 
 export default MySQLManager;

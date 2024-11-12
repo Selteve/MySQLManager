@@ -1,26 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import '../styles/ConnectionList.css'; // 引入样式文件
-import { useSelector, useDispatch } from 'react-redux';
-import { removeConnection } from '../../store/modules/ConnectionList';
+import useDatabaseConnection from '../../hooks/useDatabaseConnection';
 
-const ConnectionList = ({ onSwitchDatabase }) => {
-  const connections = useSelector(state => state.connectionList);
-  const dispatch = useDispatch();
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [message, setMessage] = useState('');
-
-  const handleDelete = (id) => {
-    dispatch(removeConnection(id));
-  };
-
-  const handleSwitchDatabase = (connection) => {
-    const success = onSwitchDatabase(connection);
-    if (success) {
-      setMessage(`成功切换到数据库: ${connection.username}`);
-    } else {
-      setMessage(`切换数据库失败`);
-    }
-  };
+const ConnectionList = ({ onSwitchDatabase, initialConnections }) => {
+  const {
+    connections,
+    setConnections,
+    hoveredIndex,
+    setHoveredIndex,
+    message,
+    handleDelete,
+    handleSwitchDatabase
+  } = useDatabaseConnection(initialConnections);
 
   return (
     <div className="editable-connection-list">
@@ -42,7 +33,7 @@ const ConnectionList = ({ onSwitchDatabase }) => {
               key={conn.id}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              onClick={() => handleSwitchDatabase(conn)} // 点击行切换数据库
+              onClick={() => handleSwitchDatabase(conn, onSwitchDatabase)} // 点击行切换数据库
             >
               <td>{conn.username}</td>
               <td>{conn.host}</td>
