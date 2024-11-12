@@ -1,0 +1,64 @@
+.editable-connection-list {
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .editable-connection-list h2 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .editable-connection-table {
+    width: 100%;
+    table-layout: fixed; /* 固定表格布局 */
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  
+  .editable-connection-table th,
+  .editable-connection-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    overflow: hidden; /* 防止内容溢出 */
+    white-space: nowrap; /* 防止文本换行 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
+    color: #333;
+  }
+  
+  .editable-connection-table th {
+    background-color: rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+  }
+  
+
+  
+  .editable-connection-table tr:hover {
+    transition: background-color 0.3s ease;
+  }
+  
+  .editable-connection-table button {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 0;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    visibility: hidden; /* 默认隐藏但占据空间 */
+  }
+  
+  .editable-connection-table tr:hover button {
+    visibility: visible; /* 鼠标移入时显示 */
+  }
+  
+  .editable-connection-table button:hover {
+    background-color: #ff1a1a;
+  }
