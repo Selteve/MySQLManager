@@ -25,10 +25,17 @@ const MySQLManager = () => {
     isConnected, setIsConnected,
     isConnecting, setIsConnecting,
     modalContent,
+    setModalContent,
     isModalOpen,
     setIsModalOpen,
     handleConnect,
-    handleSwitchDatabase
+    handleSwitchDatabase,
+    handleTableSave,
+    handleTableAdd,
+    handleTableDelete,
+    handleQueryExecute,
+    connections,
+    setConnections
   } = useDatabaseConnection();
 
   const [editingRow, setEditingRow] = useState(null);
@@ -40,30 +47,32 @@ const MySQLManager = () => {
   const mainContentRef = useRef(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-  const [connections, setConnections] = useState([]);
-
 
   const handleSave = async () => {
     try {
-      await UpdateTableData(selectedDb, selectedTable, editingRow.id, editingRow);
+      await handleTableSave(selectedDb, selectedTable, editingRow);
       setEditingRow(null);
-      const updatedData = await GetTableData(selectedDb, selectedTable);
-      setTableData(updatedData);
     } catch (error) {
-      console.error('更新失败:', error);
-      alert('更新失败: ' + error.message);
+      setModalContent({
+        title: '更新失败',
+        message: error.message,
+        type: 'error'
+      });
+      setIsModalOpen(true);
     }
   };
 
   const handleAdd = async () => {
     try {
-      await InsertTableData(selectedDb, selectedTable, newRow);
+      await handleTableAdd(selectedDb, selectedTable, newRow);
       setNewRow({});
-      const updatedData = await GetTableData(selectedDb, selectedTable);
-      setTableData(updatedData);
     } catch (error) {
-      console.error('添加失败:', error);
-      alert('添加失败: ' + error.message);
+      setModalContent({
+        title: '添加失败',
+        message: error.message,
+        type: 'error'
+      });
+      setIsModalOpen(true);
     }
   };
 
@@ -74,16 +83,13 @@ const MySQLManager = () => {
 
   const confirmDelete = async () => {
     try {
-      await DeleteTableData(selectedDb, selectedTable, deleteId);
-      const updatedData = await GetTableData(selectedDb, selectedTable);
-      setTableData(updatedData);
+      await handleTableDelete(selectedDb, selectedTable, deleteId);
       setModalContent({
         title: '删除成功',
         message: '记录已成功删除。',
         type: 'success'
       });
     } catch (error) {
-      console.error('删除失败:', error);
       setModalContent({
         title: '删除失败',
         message: error.message,
@@ -97,11 +103,15 @@ const MySQLManager = () => {
 
   const handleExecuteQuery = async () => {
     try {
-      const result = await ExecuteQuery(selectedDb, customQuery);
+      const result = await handleQueryExecute(selectedDb, customQuery);
       setQueryResult(result);
     } catch (error) {
-      console.error('查询执行失败:', error);
-      alert('查询执行失败: ' + error.message);
+      setModalContent({
+        title: '查询执行失败',
+        message: error.message,
+        type: 'error'
+      });
+      setIsModalOpen(true);
     }
   };
 
