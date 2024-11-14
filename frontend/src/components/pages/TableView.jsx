@@ -25,10 +25,10 @@ const TableView = ({
           </tr>
         </thead>
         <tbody>
-          {tableData.map(row => (
-            <tr key={row.id}>
-              {Object.entries(row).map(([key, value]) => (
-                <td key={key}>
+          {tableData.map((row, rowIndex) => (
+            <tr key={row.id || `row-${rowIndex}`}>
+              {Object.entries(row).map(([key, value], colIndex) => (
+                <td key={`${row.id || rowIndex}-${key}-${colIndex}`}>
                   {editingRow && editingRow.id === row.id ? (
                     <input
                       value={editingRow[key]}
@@ -53,9 +53,9 @@ const TableView = ({
               </td>
             </tr>
           ))}
-          <tr className="new-row">
-            {Object.keys(tableData[0]).map(key => (
-              <td key={key}>
+          <tr className="new-row" key="new-row">
+            {Object.keys(tableData[0]).map((key, index) => (
+              <td key={`new-${key}-${index}`}>
                 <input
                   value={newRow[key] || ''}
                   onChange={(e) => setNewRow({...newRow, [key]: e.target.value})}

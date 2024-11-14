@@ -62,3 +62,11 @@
   .editable-connection-table button:hover {
     background-color: #ff1a1a;
   }
+  /* .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    background: #f5f5f5;
+    border-radius: 8px;
+    margin: 1rem 0;
+  } */

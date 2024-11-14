@@ -9,11 +9,19 @@ const ConnectionForm = ({
   setHost, 
   port, 
   setPort, 
-  dbName, 
-  setDbName, 
   handleConnect, 
   isConnecting 
 }) => {
+  const onConnect = () => {
+    const connectionInfo = {
+      username,
+      password,
+      host,
+      port
+    };
+    handleConnect(connectionInfo);
+  };
+
   return (
     <div className="top-bar glass-effect">
       <div className="connection-form">
@@ -41,13 +49,11 @@ const ConnectionForm = ({
           value={port}
           onChange={(e) => setPort(e.target.value)}
         />
-        <input
-          type="text"
-          placeholder="数据库名称"
-          value={dbName}
-          onChange={(e) => setDbName(e.target.value)}
-        />
-        <button className="primary-button" onClick={handleConnect} disabled={isConnecting}>
+        <button 
+          className="primary-button" 
+          onClick={onConnect} 
+          disabled={isConnecting}
+        >
           {isConnecting ? '连接中...' : '连接'}
         </button>
       </div>

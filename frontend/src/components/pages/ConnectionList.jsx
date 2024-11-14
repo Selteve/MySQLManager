@@ -1,17 +1,28 @@
 import React from 'react';
-import '../styles/ConnectionList.css'; // 引入样式文件
+import '../styles/ConnectionList.css';
 import useDatabaseConnection from '../../hooks/useDatabaseConnection';
 
-const ConnectionList = ({ onSwitchDatabase, initialConnections }) => {
+const ConnectionList = ({ onSwitchDatabase }) => {
   const {
     connections,
-    setConnections,
     hoveredIndex,
     setHoveredIndex,
     message,
     handleDelete,
     handleSwitchDatabase
-  } = useDatabaseConnection(initialConnections);
+  } = useDatabaseConnection();
+
+  if (!connections || connections.length === 0) {
+    return (
+      <div className="editable-connection-list">
+        <h2>连接列表</h2>
+        {message && <div className="message">{message}</div>}
+        <div className="empty-state">
+          暂无保存的连接
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="editable-connection-list">
@@ -30,10 +41,9 @@ const ConnectionList = ({ onSwitchDatabase, initialConnections }) => {
         <tbody>
           {connections.map((conn, index) => (
             <tr 
-              key={conn.id}
+              key={conn.id || index}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              onClick={() => handleSwitchDatabase(conn, onSwitchDatabase)} // 点击行切换数据库
             >
               <td>{conn.username}</td>
               <td>{conn.host}</td>
@@ -41,7 +51,10 @@ const ConnectionList = ({ onSwitchDatabase, initialConnections }) => {
               <td>{conn.dbName}</td>
               <td>
                 {hoveredIndex === index && (
-                  <button onClick={() => handleDelete(conn.id)}>删除</button>
+                  <>
+                    <button onClick={() => handleSwitchDatabase(conn, onSwitchDatabase)}>切换</button>
+                    <button onClick={() => handleDelete(conn.id)}>删除</button>
+                  </>
                 )}
               </td>
             </tr>
